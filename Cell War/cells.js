@@ -36,8 +36,6 @@ window.onload = function init()
 
 	const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-	// hlight = new THREE.AmbientLight (0x404040,50);
-	// scene.add(hlight);
 	light = new THREE.PointLight(0xA9A9A9,10);
 	light.position.set(0,3000,5000);
 	scene.add(light);
@@ -89,7 +87,7 @@ function loadImmuneCell() {
    loader.load('./lympocyte/scene.gltf', function(gltf){
        var cell = gltf.scene.children[0];
        cell.scale.set(5, 5, 5);
-       cell.position.set(80, 50, 80);    // 물체 위치
+       cell.position.set(0, 0, 0);    // 물체 위치
        scene.add(gltf.scene);
 
    }, undefined, function (error) {
@@ -112,6 +110,7 @@ function loadImmuneCell() {
 		cancer.state = GROWING;
 
 		var offset = getRandomOffset();
+		cancer.position.set(-60, 60, 60);
 		cancer.direction = offset;
 
 		scene.add(cancer);
