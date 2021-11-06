@@ -1,0 +1,11 @@
+Model Information:
+* title:	blood-cell
+* source:	https://sketchfab.com/3d-models/blood-cell-05d37876042d4f2289d9ad8142a41f7d
+* author:	asarin (https://sketchfab.com/asarin)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "blood-cell" (https://sketchfab.com/3d-models/blood-cell-05d37876042d4f2289d9ad8142a41f7d) by asarin (https://sketchfab.com/asarin) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
