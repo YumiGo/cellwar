@@ -1,3 +1,13 @@
+const gameStart = document.querySelector(".game_start");//시작화면
+const gameOver = document.querySelector(".game_over"); //게임오버 화면
+const startButton= document.querySelector(".game_start > button"); // 시작 버튼
+const replayButton= document.querySelector(".game_over > button"); // 리플레이 버튼
+const scoreBoard = document.getElementById( "divpop" ); // 점수판
+var num_cancer = 0; // 남아있는 암세포 수
+var win = false; // 승패 결정 bool 변수
+var over = false; // 게임 종료 결정 bool 변수
+var handle = 0; // 애니매이션 종료 기능에 사용 됨
+var score = 0; // 점수
 // 암세포 상태 (성장중, 싸우는중, 죽음)
 const GROWING = 0;
 const FIGHTING = 1;
@@ -16,8 +26,11 @@ var cancerList = [];	// 암세포 변수들을 담아놓는 리스트
 var bloodCellIndex = 0;
 var bloodCellList = [];
 
-window.onload = function init()
-{
+window.onload = function showGameStart(){
+	gameStart.style.display = "flex"
+}
+
+function init(){
 	canvas = document.getElementById( "gl-canvas" );
 	canvas.width = window.innerWidth; 
 	canvas.height = window.innerHeight;
@@ -52,6 +65,8 @@ window.onload = function init()
 	light4.position.set(-5000,3000,5000);
 	scene.add(light4);
 
+	document.getElementById("score").innerHTML = score; //게임화면에 점수 표시
+
 	loader = new THREE.GLTFLoader();
 
 	// gltf 모델링 불러와서 엄마 암세포(적) 만들기
@@ -75,7 +90,7 @@ window.onload = function init()
 // rendering
 function animate() {
 	renderer.render(scene, camera);
-	requestAnimationFrame(animate);
+	handle = requestAnimationFrame(animate);
  }
 
 
@@ -114,6 +129,7 @@ function loadImmuneCell() {
 		cancer.direction = offset;
 
 		scene.add(cancer);
+		num_cancer = 1;
 		cancerList[cancerIndex] = cancer;					// 각 cancer들에 접근하기 위해 리스트에 따로 저장
 		console.log("Mom " + cancerIndex + " is created [" + cancer.direction + "]")
 		cancerIndex++;
@@ -166,6 +182,7 @@ function getRandomOffset() {
 	babyCancer.direction = offset;
 
 	scene.add(babyCancer);
+	num_cancer = num_cancer + 1;
 	cancerList[cancerIndex] = babyCancer;			// 각 cancer들에 접근하기 위해 리스트에 따로 저장
 	console.log(cancerIndex++ + " is created [" + babyCancer.direction + "]")
 }
@@ -221,6 +238,13 @@ function updateCancersState() {
 
 			removeCancer(i);
 		}
+	}
+	if(num_cancer > 15){
+		over = true; // 게임이 끝났다
+		win = false; //졌다
+	}
+	if(over){
+		showGameOver();
 	}
 }
 
@@ -383,3 +407,44 @@ function copyAndSpreadBloodCells() {
 function getRandomValue() {
 	return Math.floor(Math.random() * 600 - 300);
 }
+
+//게임 종료 화면
+function showGameOver(){
+	stop() // 애니매이션 멈추기
+	if(win){ // 이겼으면
+		document.getElementById("result").innerHTML = "You Win!";
+	}
+	else{ //졌으면
+		document.getElementById("result").innerHTML = "YouLoose";
+	}
+	document.getElementById("score_result").innerHTML = "Score:" + score; //점수 표시
+	gameOver.style.display = "flex" // 게임 오버 화면 띄우기
+	scoreBoard.style.display = "none" // 점수판 삭제
+}
+
+//애니매이션 멈춤
+function stop() {
+    if (handle) {
+       window.cancelAnimationFrame(handle);
+    }
+}
+
+//Start 버튼 눌렀을 때 게임 시작하기
+startButton.addEventListener("click", ()=>{
+	gameStart.style.display = "none" // 시작 화면 지우기
+	scoreBoard.style.display = "flex" // 점수판 띄우기
+	init(); // 게임 시작
+})
+
+//Replay 버튼 눌렀을 때 
+replayButton.addEventListener("click", ()=>{
+	num_cancer = 0; // 암세포 개수 초기화
+	score = 0; // 점수 초기화
+	gameOver.style.display = "none" // 게임오버 화면 지우기
+	scoreBoard.style.display = "flex" // 점수판 띄우기
+	over = false; // 다시 게임 시작
+	while(scene.children.length > 0){ // 화면 비우기
+		scene.remove(scene.children[0]); 
+	}
+	init(); // 다시 게임 시작
+})

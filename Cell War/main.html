@@ -14,6 +14,8 @@
   				border: 3px solid white;
 			}
 		</style>
+		<link rel="stylesheet" href="css/style.css">
+		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Abril+Fatface" />
 		<link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet">
 	</head>
 
@@ -21,7 +23,7 @@
 		<script type="text/javascript" src="js/three.min.js"></script>
 		<script type="text/javascript" src="js/GLTFLoader.js"></script>
 		<script type="text/javascript" src="js/OrbitControls.js"></script>		
-		<script type="text/javascript" src="cells.js"></script>
+		
 
 		<!-- <script src="https://cdn.jsdelivr.net/npm/three@0.115/build/three.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/three@0.115/examples/js/loaders/GLTFLoader.js"></script>
@@ -33,6 +35,18 @@
 			Oops ... your browser doesn't support the HTML5 canvas element
 		</canvas>
 
+		<!-- 게임 시작 화면 -->
+		<div class="game_start">
+			<span>Cell War</span>
+			<button>START</button>
+		</div>
+		<!-- 게임 종료 화면 -->
+		<div class="game_over">
+			<span id = "result"></span>
+			<span id = "score_result"></span>
+			<button>REPLAY</button>
+		</div>
+		
 		<!-- 점수판 -->
 		<div id="divpop" style="position:absolute; right:20px; top:20px; overflow:hidden ">
 			<table width=220 height=80>	<!-- 점수판 크기 조절 -->
@@ -41,15 +55,15 @@
 				SCORE
 				</td>
 				<td style="height:20; text-align:center; color:white; background-color:#43B919">
-				<p id="score">100</p>
+				<p id="score">Score </p>
 				</td>
 			</tr>
 			</table>
 		</div>
-
+		<script type="text/javascript" src="cells.js"></script>
 		<script>
 			// 점수판
-			document.all['divpop'].style.visibility = "visible";
+			//document.all['divpop'].style.visibility = "visible";
 
 		//----------------------------------------------초기 배경 관련-----------------------------------------------------------		
 			// var scene = new THREE.Scene();

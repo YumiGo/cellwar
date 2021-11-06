@@ -1,0 +1,49 @@
+#divpop{
+    display: none;  
+}
+.game_start{
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    background-image: url("/Cell War/back.jpg");
+    left: 0;
+    top: 0;
+    color: #FFF;
+    font: italic normal 10em "Abril Fatface", serif;
+}
+.game_start > button {
+    padding: 0.5rem;
+    color: #fff;
+    background: #4C4DDF;
+    cursor: pointer;
+}
+.game_over{
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    left: 0;
+    top: 0;
+    color: #FFF;
+    font: italic normal 7em "Press Start 2P", serif;
+}
+#score_result{
+    margin-top: 30px;
+    font: italic normal 0.5em "Press Start 2P", serif;
+}
+.game_over > button {
+    margin-top: 30px;
+    padding: 0.5rem;
+    color: #fff;
+    background: #4C4DDF;
+    cursor: pointer;
+}

@@ -1,0 +1,11 @@
+Model Information:
+* title:	Virus Rotation
+* source:	https://sketchfab.com/3d-models/virus-rotation-de24583dd97b4b41a45cb4c18bfd5ad0
+* author:	marien22 (https://sketchfab.com/marien22)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Virus Rotation" (https://sketchfab.com/3d-models/virus-rotation-de24583dd97b4b41a45cb4c18bfd5ad0) by marien22 (https://sketchfab.com/marien22) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
