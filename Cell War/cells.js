@@ -3,11 +3,13 @@ const gameOver = document.querySelector(".game_over"); //게임오버 화면
 const startButton= document.querySelector(".game_start > button"); // 시작 버튼
 const replayButton= document.querySelector(".game_over > button"); // 리플레이 버튼
 const scoreBoard = document.getElementById( "divpop" ); // 점수판
+
 var num_cancer = 0; // 남아있는 암세포 수
 var win = false; // 승패 결정 bool 변수
 var over = false; // 게임 종료 결정 bool 변수
 var handle = 0; // 애니매이션 종료 기능에 사용 됨
 var score = 0; // 점수
+
 // 암세포 상태 (성장중, 싸우는중, 죽음)
 const GROWING = 0;
 const FIGHTING = 1;
@@ -17,7 +19,13 @@ var canvas;
 var renderer;
 var scene;
 var camera;
+var light;
 var loader;
+
+let left = 65, right = 68 // LEFT: "A" RIGHT: "D"
+let up = 87, down = 83; // UP: "W" DOWN: "S"
+
+var cell; // 면역세포
 
 var cancerIndex = 0;	// 암세포들의 총 개수(이미 죽은 암세포도 포함)
 var cancerList = [];	// 암세포 변수들을 담아놓는 리스트
@@ -41,8 +49,8 @@ function init(){
 	scene = new THREE.Scene();
     scene.background = new THREE.Color('#AC1822');  // 배경색
 
-	camera = new THREE.PerspectiveCamera(75,canvas.width / canvas.height,0.1, 1000);
-	camera.rotation.y = 45/180*Math.PI;
+	camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+	camera.rotation.y = 45 / 180 * Math.PI;
 	camera.position.x = 130;
 	camera.position.y = 100;
 	camera.position.z = 130;
@@ -65,18 +73,19 @@ function init(){
 	light4.position.set(-5000,3000,5000);
 	scene.add(light4);
 
-	document.getElementById("score").innerHTML = score; //게임화면에 점수 표시
+	window.addEventListener("keydown", keyCodeOn, false);
+	document.getElementById("score").innerHTML = score; // 게임화면에 점수 표시
 
 	loader = new THREE.GLTFLoader();
 
-	// gltf 모델링 불러와서 엄마 암세포(적) 만들기
-	loadRootCancer();
-
 	// gltf 모델링 불러와서 면역세포(유저) 만들기
     loadImmuneCell();
-
+	
 	// gltf 모델링 불러와서 적혈구(먹이) 만들기
 	loadBloodCell();
+
+	// gltf 모델링 불러와서 엄마 암세포(적) 만들기
+	loadRootCancer();
 	
 	// 매 초마다 특정 함수들 실행
 	setInterval(updateCancersState, 1000);	// 1초마다 포인트, 상태 업데이트
@@ -89,21 +98,22 @@ function init(){
 
 // rendering
 function animate() {
+
+		
 	renderer.render(scene, camera);
 	handle = requestAnimationFrame(animate);
- }
-
+}
 
 
 /**** 면역세포 ****/
 // gltf 파일에서 모델링 불러와서 면역세포(user)를 만드는 함수
 function loadImmuneCell() {
 
-   loader.load('./lympocyte/scene.gltf', function(gltf){
-       var cell = gltf.scene.children[0];
+   loader.load('./lympocyte/scene.gltf', function(gltf) {
+       cell = gltf.scene.children[0];
        cell.scale.set(5, 5, 5);
        cell.position.set(0, 0, 0);    // 물체 위치
-       scene.add(gltf.scene);
+       scene.add(cell);
 
    }, undefined, function (error) {
        console.error(error);
@@ -112,10 +122,24 @@ function loadImmuneCell() {
 }
 
 
+// 면역세포(user) 방향 조작 가능케하는 함수
+function keyCodeOn(e) {
+	if (e.keyCode == left)
+		cell.position.x -= 2
+	else if (e.keyCode == right)
+		cell.position.x += 2;
+	else if (e.keyCode == up)
+		cell.position.z += 2;
+	else if (e.keyCode == down)
+		cell.position.z -= 2;
+	else
+		return;
+}
+
 
 /**** 암세포 ****/
- // gltf 파일에서 모델링 불러와서 맨 처음 모든 암세포의 엄마가 되는 root cancer 만드는 함수
- function loadRootCancer() {
+// gltf 파일에서 모델링 불러와서 맨 처음 모든 암세포의 엄마가 되는 root cancer 만드는 함수
+function loadRootCancer() {
 
 	loader.load('./cancer_model/scene.gltf', function(gltf){
 		var cancer = gltf.scene.children[0];
@@ -134,9 +158,9 @@ function loadImmuneCell() {
 		console.log("Mom " + cancerIndex + " is created [" + cancer.direction + "]")
 		cancerIndex++;
 
-	  }, undefined, function (error) {
+	}, undefined, function (error) {
 		  console.error(error);
-	  });
+	});
 }
 
 // 암세포가 움직일 방향 또는 엄마 암세포로부터 떨어진 초기 위치(offset)를 생성해서 리턴해주는 함수
@@ -161,7 +185,7 @@ function getRandomOffset() {
 }
 
  // 엄마 암세포로부터 자식 암세포 생성하는 함수
- function createBabyCancer(momIndex, offset) {
+function createBabyCancer(momIndex, offset) {
 
 	// 엄마 암세포 있나 없나 체크
 	var momCancer = cancerList[momIndex]
@@ -239,11 +263,11 @@ function updateCancersState() {
 			removeCancer(i);
 		}
 	}
-	if(num_cancer > 15){
+	if (num_cancer > 15) {
 		over = true; // 게임이 끝났다
 		win = false; //졌다
 	}
-	if(over){
+	if (over) {
 		showGameOver();
 	}
 }
@@ -371,9 +395,9 @@ function loadBloodCell() {
 
 		copyAndSpreadBloodCells();
 
-	  }, undefined, function (error) {
+	}, undefined, function (error) {
 		  console.error(error);
-	  });
+	});
 }
 
 // 적혈구 100개를 복사해서 랜덤한 곳에 뿌려주는 함수
