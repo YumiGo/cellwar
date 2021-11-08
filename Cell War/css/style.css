@@ -9,8 +9,21 @@
     background: linear-gradient(to right, #3498db, #2c3e50); 
     */
 }
-#divpop{
-    display: none;  
+#score_board{
+    line-height: 1.5;
+    font-family: 'Press Start 2P', cursive;
+    border: 2.7px solid white;
+    width:220; 
+    height:80; 
+    padding-left: 15px; 
+    padding-right: 15px; 
+    display:none; 
+    position:absolute; 
+    right:20px; 
+    top:20px; 
+    text-align:center; 
+    color:white; 
+    background-color:#43B919;
 }
 .game_start{
     display: none;

@@ -8,11 +8,6 @@
 				width: 100vw;
 				height: 90vh;
 			}
-			#divpop {
-				line-height: 1.5;
-				font-family: 'Press Start 2P', cursive;
-  				border: 3px solid white;
-			}
 		</style>
 		<link rel="stylesheet" href="css/style.css">
 		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Abril+Fatface" />
@@ -42,18 +37,9 @@
 		</div>
 		
 		<!-- Score board -->
-		<div id="divpop" style="position:absolute; right:20px; top:20px; overflow:hidden ">
-			<table width=220 height=80>	<!-- Control the size of score board -->
-			<tr>
-				<td style="height:20; text-align:center; color:white; background-color:#43B919">
-				SCORE
-				</td>
-				
-				<td style="height:20; text-align:center; color:white; background-color:#43B919">
-				<p id="score">Score </p>
-				</td>
-			</tr>
-			</table>
+		<div id="score_board">
+			<h2 style="float: right;">SCORE:&nbsp;</h1>
+			<h2 id="score">0</h1>
 		</div>
 
 		<script type="text/javascript" src="cells.js"></script>

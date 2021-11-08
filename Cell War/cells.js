@@ -1,14 +1,15 @@
-const gameStart = document.querySelector(".game_start");//시작화면
-const gameOver = document.querySelector(".game_over"); //게임오버 화면
-const startButton= document.querySelector(".game_start > button"); // 시작 버튼
-const replayButton= document.querySelector(".game_over > button"); // 리플레이 버튼
-const scoreBoard = document.getElementById( "divpop" ); // 점수판
+const gameStart = document.querySelector(".game_start");	// game start screen
+const gameOver = document.querySelector(".game_over"); 		// game over screen
+const startButton= document.querySelector(".game_start > button"); // start button
+const replayButton= document.querySelector(".game_over > button"); // replay button
+const scoreBoard = document.getElementById( "score_board" ); 	// score board
+const scoreNum = document.getElementById( "score" ); 	// number of score
 
-var num_cancer = 0; // 남아있는 암세포 수
-var win = false; // 승패 결정 bool 변수
-var over = false; // 게임 종료 결정 bool 변수
-var handle = 0; // 애니매이션 종료 기능에 사용 됨
-var score = 0; // 점수
+var num_cancer = 0; 	// the number of remaining cancer cell
+var win = false; 		// bool variable to determine win/loss
+var over = false; 		// bool variable to terminate the game
+var handle = 0; 		// used to terminate the animation
+var score = 0; 			// score
 
 // 암세포 상태 (성장중, 싸우는중, 죽음)
 const GROWING = 0;
@@ -51,6 +52,7 @@ function init(){
 
 	scene = new THREE.Scene();
     //scene.background = new THREE.Color('#AC1822');  // 배경색
+
 	//3D 배경
 	const tloader = new THREE.TextureLoader();
     const texture = tloader.load(
@@ -86,7 +88,7 @@ function init(){
 	scene.add(light4);
 
 	window.addEventListener("keydown", keyCodeOn, false);
-	document.getElementById("score").innerHTML = score; // 게임화면에 점수 표시
+	scoreNum.innerHTML = score; // 게임화면에 점수 표시
 
 	loader = new THREE.GLTFLoader();
 
@@ -390,10 +392,17 @@ function detectCollision() {
 				console.log("포인트가 0 이하가 되었으므로 게임 오버");
 				stop();
 				showGameOver();
+
 				return;
 			}
 			if (cancer.point <= 0) {
 				// 암세포 죽음
+				score += 10;	// 10 points per cancer cell
+				scoreNum.innerHTML = score;		// update score
+				
+				// 점수가 몇 점이 됐을 때 win으로 할 건지 정해야 함
+				// 현재 정해진 조건은 '화면에 있는 모든 암세포를 없앴을 때 win'임
+
 				scene.remove(cancer);
 				cancerList[i] = undefined;
 			}
@@ -487,12 +496,12 @@ function getRandomValue() {
 
 //게임 종료 화면
 function showGameOver(){
-	stop() // 애니매이션 멈추기
+	stop(); // 애니매이션 멈추기
 	if(win){ // 이겼으면
 		document.getElementById("result").innerHTML = "You Win!";
 	}
 	else{ //졌으면
-		document.getElementById("result").innerHTML = "YouLoose";
+		document.getElementById("result").innerHTML = "You Loose";
 	}
 	document.getElementById("score_result").innerHTML = "Score:" + score; //점수 표시
 	gameOver.style.display = "flex" // 게임 오버 화면 띄우기
