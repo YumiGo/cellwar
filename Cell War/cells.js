@@ -242,6 +242,7 @@ function removeCancer(i) {
 		return;
 		
     scene.remove(cancer);					// scene에서 제거, 더이상 렌더링 되지 않음
+	num_cancer = num_cancer - 1;
 	cancerList[i] = undefined;
 	console.log(cancer.index + " is killed");
 }
@@ -349,6 +350,7 @@ function changeCancersDirection() {
 
 // 면역세포-적혈구, 면역세포-암세포간의 충돌 탐지
 function detectCollision() {
+
 	// 면역세포와 적혈구의 충돌 탐지
 	for (var i = 0; i < bloodCellIndex; i++) {
 		var bloodCell = bloodCellList[i];
@@ -389,23 +391,45 @@ function detectCollision() {
 			console.log("암세포와의 충돌 발생, 점수: " + cell.point);
 			if (cell.point <= 0) {
 				// 게임 오버
-				console.log("포인트가 0 이하가 되었으므로 게임 오버");
+				console.log("면역세포의 포인트가 0 이하가 되었으므로 게임 오버");
 				stop();
 				showGameOver();
 
 				return;
 			}
-			if (cancer.point <= 0) {
-				// 암세포 죽음
-				score += 10;	// 10 points per cancer cell
+
+			if (cancer.point <= 0) {	// 암세포 죽음			
+				score += 10;	// 10 points per one cancer cell
 				scoreNum.innerHTML = score;		// update score
-				
-				// 점수가 몇 점이 됐을 때 win으로 할 건지 정해야 함
-				// 현재 정해진 조건은 '화면에 있는 모든 암세포를 없앴을 때 win'임
 
 				scene.remove(cancer);
+				num_cancer = num_cancer - 1;
 				cancerList[i] = undefined;
+
+				// 두 가지 win 조건을 체크함
+				if(score == 50)	{
+					console.log("점수가 50이 되었으므로 게임 오버");
+
+					over = true; 
+					win = true;
+					stop();
+					showGameOver();
+
+					return;
+				}
+				
+				if (num_cancer  == 0) {
+					console.log("화면에 있는 암세포를 모두 제거하였으므로 게임 오버");
+
+					over = true; 
+					win = true;
+					stop();
+					showGameOver();
+									
+					return;
+				}
 			}
+
 		}
 	}
 }
