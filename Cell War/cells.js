@@ -42,6 +42,18 @@ window.onload = function showGameStart(){
 	gameStart.style.display = "flex"
 }
 
+// An object to hold all the things needed for our loading screen
+var loadingScreen = {
+	scene: new THREE.Scene(),
+	camera: new THREE.PerspectiveCamera(90, 1280/720, 0.1, 100),
+	box: new THREE.Mesh(
+		new THREE.BoxGeometry(0.5,0.5,0.5),
+		new THREE.MeshBasicMaterial({ color:0x4444ff })
+	)
+};
+var loadingManager = null;
+var RESOURCES_LOADED = false;
+
 function init(){
 	canvas = document.getElementById( "gl-canvas" );
 	canvas.width = window.innerWidth; 
@@ -50,11 +62,30 @@ function init(){
 	renderer = new THREE.WebGLRenderer({canvas, alpha: true,});
 	renderer.setSize(canvas.width,canvas.height);
 
-	scene = new THREE.Scene();
-    //scene.background = new THREE.Color('#AC1822');  // 배경색
+	// Set up the loading screen's scene.
+	// It can be treated just like our main scene.
+	loadingScreen.box.position.set(0,0,5);
+	loadingScreen.camera.lookAt(loadingScreen.box.position);
+	loadingScreen.scene.add(loadingScreen.box);
+	loadingScreen.scene.background = new THREE.Color('#000000');  // background color
+	// Create a loading manager to set RESOURCES_LOADED when appropriate.
+	// Pass loadingManager to all resource loaders.
+	loadingManager = new THREE.LoadingManager();
+	
+	loadingManager.onProgress = function(item, loaded, total){
+		console.log(item, loaded, total);
+	};
+	
+	loadingManager.onLoad = function(){
+		console.log("loaded all resources");
+		RESOURCES_LOADED = true;
+	};
 
-	//3D 배경
-	const tloader = new THREE.TextureLoader();
+	scene = new THREE.Scene();
+    scene.background = new THREE.Color('#000000');  // background color
+
+	//3D background texture
+	const tloader = new THREE.TextureLoader(loadingManager);
     const texture = tloader.load(
       'galaxy1.jpg',
       () => {
@@ -90,7 +121,7 @@ function init(){
 	window.addEventListener("keydown", keyCodeOn, false);
 	scoreNum.innerHTML = score; // 게임화면에 점수 표시
 
-	loader = new THREE.GLTFLoader();
+	loader = new THREE.GLTFLoader(loadingManager);
 
 	// gltf 모델링 불러와서 면역세포(유저) 만들기
     loadImmuneCell();
@@ -122,6 +153,18 @@ function init(){
 
 // rendering
 function animate() {
+	// This block runs while resources are loading.
+	if( RESOURCES_LOADED == false ){
+		requestAnimationFrame(animate);
+		
+		loadingScreen.box.position.x -= 0.05;
+		if( loadingScreen.box.position.x < -10 ) loadingScreen.box.position.x = 10;
+		loadingScreen.box.position.y = Math.sin(loadingScreen.box.position.x);
+		
+		renderer.render(loadingScreen.scene, loadingScreen.camera);
+		return; // Stop the function here.
+	}
+	scoreBoard.style.display = "flex" 
 	renderer.render(scene, camera);
 	handle = requestAnimationFrame(animate);
 }
@@ -549,7 +592,6 @@ function stop() {
 //Start 버튼 눌렀을 때 게임 시작하기
 startButton.addEventListener("click", ()=>{
 	gameStart.style.display = "none" // 시작 화면 지우기
-	scoreBoard.style.display = "flex" // 점수판 띄우기
 	init(); // 게임 시작
 })
 
@@ -558,10 +600,10 @@ replayButton.addEventListener("click", ()=>{
 	num_cancer = 0; // 암세포 개수 초기화
 	score = 0; // 점수 초기화
 	gameOver.style.display = "none" // 게임오버 화면 지우기
-	scoreBoard.style.display = "flex" // 점수판 띄우기
 	over = false; // 다시 게임 시작
 	while(scene.children.length > 0){ // 화면 비우기
 		scene.remove(scene.children[0]); 
 	}
+	RESOURCES_LOADED = false;
 	init(); // 다시 게임 시작
 })
