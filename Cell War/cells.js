@@ -34,6 +34,9 @@ var cancerList = [];	// 암세포 변수들을 담아놓는 리스트
 var bloodCellIndex = 0;
 var bloodCellList = [];
 
+// 게임 종료시 setInterval 함수의 중단을 위해 필요한 변수 저장용 리스트
+var intervalVariables = [];
+
 window.onload = function showGameStart(){
 	gameStart.style.display = "flex"
 }
@@ -97,18 +100,26 @@ function init(){
 	loadRootCancer();
 	
 	// 매 초마다 특정 함수들 실행
-	setInterval(updateCancersState, 1000);	// 1초마다 포인트, 상태 업데이트
-	setInterval(changeCancersDirection, 500);	// 0.5초마다 암세포 이동 방향 조정
-	setInterval(increaseCancersScale, 100);	// 0.1초마다 크기 증가
-	setInterval(moveCancers, 100);	// 0.1초마다 암세포 이동
+	var interval = setInterval(updateCancersState, 1000);	// 1초마다 포인트, 상태 업데이트
+	intervalVariables.push(interval);
+
+	interval = setInterval(changeCancersDirection, 500);	// 0.5초마다 암세포 이동 방향 조정
+	intervalVariables.push(interval);
+
+	interval = setInterval(increaseCancersScale, 100);	// 0.1초마다 크기 증가
+	intervalVariables.push(interval);
+
+	interval = setInterval(moveCancers, 100);	// 0.1초마다 암세포 이동
+	intervalVariables.push(interval);
+
+	interval = setInterval(detectCollision, 200);	// 0.2초마다 충돌 탐지
+	intervalVariables.push(interval);
 
 	animate();
 }
 
 // rendering
 function animate() {
-
-		
 	renderer.render(scene, camera);
 	handle = requestAnimationFrame(animate);
 }
@@ -122,6 +133,7 @@ function loadImmuneCell() {
        cell = gltf.scene.children[0];
        cell.scale.set(5, 5, 5);
        cell.position.set(0, 0, 0);    // 물체 위치
+	   cell.point = 0;
        scene.add(cell);
    }, undefined, function (error) {
        console.error(error);
@@ -152,12 +164,12 @@ function loadRootCancer() {
 	loader.load('./cancer_model/scene.gltf', function(gltf){
 		var cancer = gltf.scene.children[0];
 		cancer.index = cancerIndex;
-		cancer.point = 0;
+		cancer.point = 1;
 		cancer.scale.set(5, 5, 5);
 		cancer.state = GROWING;
 
 		var offset = getRandomOffset();
-		cancer.position.set(-60, 60, 60);
+		cancer.position.set(-40, 0, 0);
 		cancer.direction = offset;
 
 		scene.add(cancer);
@@ -332,59 +344,92 @@ function changeCancersDirection() {
 	}
 }
 
-// 암세포들간의 충돌 탐지
-function detectCancersCollision() {
-	for (var i = 0; i < cancerIndex; i++) {
 
-		// 해당 index에 아무것도 없다면 이번 루프 패스
+// 면역세포-적혈구, 면역세포-암세포간의 충돌 탐지
+function detectCollision() {
+	// 면역세포와 적혈구의 충돌 탐지
+	for (var i = 0; i < bloodCellIndex; i++) {
+		var bloodCell = bloodCellList[i];
+		if (!bloodCell)
+			continue;
+
+		// 충돌했을 때
+		if (getCollision(cell, bloodCell)) {
+			// 먹힌 적혈구 제거
+			scene.remove(bloodCell);
+			bloodCellList[i] = undefined;
+			// 면역세포 포인트 증가 (10만큼)
+			cell.point += bloodCell.point;
+			cell.scale.set(cell.scale.x + 1.0, cell.scale.y + 1.0, cell.scale.z + 1.0);
+			console.log("적혈구와의 충돌 발생, 점수: " + cell.point);
+		}
+	}
+
+	// 면역세포와 암세포의 충돌 탐지
+	for (var i = 0; i < cancerIndex; i++) {
 		var cancer = cancerList[i];
 		if (!cancer)
 			continue;
 
-		// 암세포 충돌 확인
-		if (cancer.state === GROWING) {
-			// cancer의 현재 좌표
-			var cp = [cancer.position.x, cancer.position.y, cancer.position.z];
+		// 충돌했을 때
+		if (getCollision(cell, cancer)) {
+			var cellDecrease = cancer.point * 0.1;
+			var cancerDecrease = cell.point * 0.1;
 
-			// cancer의 반지름
-			var box = new THREE.Box3().setFromObject( cancer );
-			var cancer_radius = Math.floor(Math.abs(box.max.x - box.min.x)) / 2;
+			cell.scale.set(cell.scale.x - cellDecrease, cell.scale.y - cellDecrease, cell.scale.z - cellDecrease);
+			cancer.scale.set(cell.scale.x - cancerDecrease, cell.scale.y - cancerDecrease, cell.scale.z - cancerDecrease);
+			
+			// 암세포의 포인트만큼 제거
+			var temp = cancer.point;
+			cancer.point -= cell.point;
+			cell.point -= temp;
 
-			for (var j = i + 1; j < cancerIndex; j++) {
-				var next_cancer = cancerList[j];
-				if (!next_cancer)
-					continue;
-
-				// next_cancer의 현재 좌표
-				var np = [next_cancer.position.x, next_cancer.position.y, next_cancer.position.z];
-				// next_cancer의 반지름
-				var next_box = new THREE.Box3().setFromObject( cancer );
-				var next_cancer_radius = Math.floor(Math.abs(next_box.max.x - next_box.min.x)) / 2;
-
-				// cancer와 next_cancer간의 거리
-				var distance = Math.floor(Math.sqrt(Math.pow(np[0] - cp[0], 2) + Math.pow(np[1] - cp[1], 2) + Math.pow(np[2] - cp[2], 2)));
-				
-				// 충돌이 발생한 경우 암세포의 진행 방향 전환 (서로 부딪쳐서 팅겨나가는 것 처럼 보이게)
-				if (distance <= cancer_radius + next_cancer_radius) {
-
-
-
-
-
-					// 충돌 발생시 어떻게 할 것인지 여기다 적으면 됨
-
-
-
-
-
-					console.log("암세포간 거리:" + distance + "\n암세포1 반지름:" + cancer_radius + "\n암세포2 반지름:" + next_cancer_radius);
-					console.log("암세포간 충돌 발생!\n\n");
-				}
+			console.log("암세포와의 충돌 발생, 점수: " + cell.point);
+			if (cell.point <= 0) {
+				// 게임 오버
+				console.log("포인트가 0 이하가 되었으므로 게임 오버");
+				stop();
+				showGameOver();
+				return;
+			}
+			if (cancer.point <= 0) {
+				// 암세포 죽음
+				scene.remove(cancer);
+				cancerList[i] = undefined;
 			}
 		}
 	}
 }
 
+// 인자로 넘겨진 두 object가 충돌했는지 안했는지 판단하는 함수
+function getCollision(first, second) {
+	if (!first || !second)
+		return;
+
+	// first 현재 좌표
+	var cp = [first.position.x, first.position.y, first.position.z];
+
+	// first 반지름
+	var firstBox = new THREE.Box3().setFromObject( first );
+	var firstRadius = Math.floor(Math.abs(firstBox.max.x - firstBox.min.x)) / 2;
+
+	// obj2 현재 좌표
+	var np = [second.position.x, second.position.y, second.position.z];
+	// obj2 반지름
+	var secondBox = new THREE.Box3().setFromObject( second );
+	var secondRadius = Math.floor(Math.abs(secondBox.max.x - secondBox.min.x)) / 2;
+
+	// cancer와 next_cancer간의 거리
+	var distance = Math.floor(Math.sqrt(Math.pow(np[0] - cp[0], 2) + Math.pow(np[1] - cp[1], 2) + Math.pow(np[2] - cp[2], 2)));
+	
+	// 충돌 발생
+	if (distance <= firstRadius + secondRadius) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
 
 
 /**** 적혈구(먹이) ***/
@@ -395,7 +440,7 @@ function loadBloodCell() {
 		cell.index = bloodCellIndex;
 		cell.point = 10;
 		cell.scale.set(3, 3, 3);
-		cell.position.set(-50, 50, 50);
+		cell.position.set(20, 0, 0);
 
 		scene.add(cell);
 		bloodCellList[bloodCellIndex] = cell;
@@ -458,6 +503,13 @@ function showGameOver(){
 function stop() {
     if (handle) {
        window.cancelAnimationFrame(handle);
+	   cancerIndex = 0;
+	   cancerList = [];
+	   bloodCellIndex = 0;
+	   bloodCellList = [];
+
+	   intervalVariables.forEach(element => clearInterval(element));
+	   intervalVariables = [];
     }
 }
 
