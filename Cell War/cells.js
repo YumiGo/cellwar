@@ -43,11 +43,20 @@ function init(){
 	canvas.width = window.innerWidth; 
 	canvas.height = window.innerHeight;
 
-	renderer = new THREE.WebGLRenderer({canvas});
+	renderer = new THREE.WebGLRenderer({canvas, alpha: true,});
 	renderer.setSize(canvas.width,canvas.height);
 
 	scene = new THREE.Scene();
-    scene.background = new THREE.Color('#AC1822');  // 배경색
+    //scene.background = new THREE.Color('#AC1822');  // 배경색
+	//3D 배경
+	const tloader = new THREE.TextureLoader();
+    const texture = tloader.load(
+      'galaxy1.jpg',
+      () => {
+        const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
+        rt.fromEquirectangularTexture(renderer, texture);
+        scene.background = rt.texture;
+      });
 
 	camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
 	camera.rotation.y = 45 / 180 * Math.PI;
@@ -114,7 +123,6 @@ function loadImmuneCell() {
        cell.scale.set(5, 5, 5);
        cell.position.set(0, 0, 0);    // 물체 위치
        scene.add(cell);
-
    }, undefined, function (error) {
        console.error(error);
    });
