@@ -4,6 +4,7 @@ const startButton= document.querySelector(".game_start > button"); // start butt
 const replayButton= document.querySelector(".game_over > button"); // replay button
 const scoreBoard = document.getElementById( "score_board" ); 	// score board
 const scoreNum = document.getElementById( "score" ); 	// number of score
+const loading = document.querySelector( ".loading" ); 	// loading screen
 
 var num_cancer = 0; 	// the number of remaining cancer cell
 var win = false; 		// bool variable to determine win/loss
@@ -26,7 +27,7 @@ var loader;
 let left = 65, right = 68 // LEFT: "A" RIGHT: "D"
 let up = 87, down = 83; // UP: "W" DOWN: "S"
 
-var cell; // 면역세포
+var cell; // immune cell
 
 var cancerIndex = 0;	// 암세포들의 총 개수(이미 죽은 암세포도 포함)
 var cancerList = [];	// 암세포 변수들을 담아놓는 리스트
@@ -62,12 +63,6 @@ function init(){
 	renderer = new THREE.WebGLRenderer({canvas, alpha: true,});
 	renderer.setSize(canvas.width,canvas.height);
 
-	// Set up the loading screen's scene.
-	// It can be treated just like our main scene.
-	loadingScreen.box.position.set(0,0,5);
-	loadingScreen.camera.lookAt(loadingScreen.box.position);
-	loadingScreen.scene.add(loadingScreen.box);
-	loadingScreen.scene.background = new THREE.Color('#000000');  // background color
 	// Create a loading manager to set RESOURCES_LOADED when appropriate.
 	// Pass loadingManager to all resource loaders.
 	loadingManager = new THREE.LoadingManager();
@@ -156,15 +151,11 @@ function animate() {
 	// This block runs while resources are loading.
 	if( RESOURCES_LOADED == false ){
 		requestAnimationFrame(animate);
-		
-		loadingScreen.box.position.x -= 0.05;
-		if( loadingScreen.box.position.x < -10 ) loadingScreen.box.position.x = 10;
-		loadingScreen.box.position.y = Math.sin(loadingScreen.box.position.x);
-		
-		renderer.render(loadingScreen.scene, loadingScreen.camera);
+		loading.style.display = "flex";
 		return; // Stop the function here.
 	}
-	scoreBoard.style.display = "flex" 
+	loading.style.display = "none";
+	scoreBoard.style.display = "flex" ;
 	renderer.render(scene, camera);
 	handle = requestAnimationFrame(animate);
 }
@@ -561,21 +552,21 @@ function getRandomValue() {
 	return Math.floor(Math.random() * 600 - 300);
 }
 
-//게임 종료 화면
+//Game over function
 function showGameOver(){
-	stop(); // 애니매이션 멈추기
-	if(win){ // 이겼으면
+	stop(); // stop animation
+	if(win){ // if win
 		document.getElementById("result").innerHTML = "You Win!";
 	}
-	else{ //졌으면
+	else{ //if loose
 		document.getElementById("result").innerHTML = "You Loose";
 	}
-	document.getElementById("score_result").innerHTML = "Score:" + score; //점수 표시
-	gameOver.style.display = "flex" // 게임 오버 화면 띄우기
-	scoreBoard.style.display = "none" // 점수판 삭제
+	document.getElementById("score_result").innerHTML = "Score:" + score; //show score
+	gameOver.style.display = "flex" // show game over screen
+	scoreBoard.style.display = "none" // hide score board
 }
 
-//애니매이션 멈춤
+//Animation stop fuction
 function stop() {
     if (handle) {
        window.cancelAnimationFrame(handle);
@@ -589,21 +580,21 @@ function stop() {
     }
 }
 
-//Start 버튼 눌렀을 때 게임 시작하기
+//Start the game
 startButton.addEventListener("click", ()=>{
-	gameStart.style.display = "none" // 시작 화면 지우기
-	init(); // 게임 시작
+	gameStart.style.display = "none" // Hide start screen
+	init(); // game start
 })
 
-//Replay 버튼 눌렀을 때 
+//Game replay
 replayButton.addEventListener("click", ()=>{
-	num_cancer = 0; // 암세포 개수 초기화
-	score = 0; // 점수 초기화
-	gameOver.style.display = "none" // 게임오버 화면 지우기
-	over = false; // 다시 게임 시작
-	while(scene.children.length > 0){ // 화면 비우기
+	num_cancer = 0; // initialize number of cancer 
+	score = 0; // initialixe score
+	gameOver.style.display = "none" // hide game over screen
+	over = false; 
+	while(scene.children.length > 0){ // remove scene
 		scene.remove(scene.children[0]); 
 	}
 	RESOURCES_LOADED = false;
-	init(); // 다시 게임 시작
+	init(); // replay
 })
