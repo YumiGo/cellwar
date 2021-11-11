@@ -113,15 +113,15 @@ function init(){
 	light.position.set(0,3000,5000);
 	scene.add(light);
 
-	light2 = new THREE.PointLight(0xA9A9A9,10);
+	var light2 = new THREE.PointLight(0xA9A9A9,10);
 	light2.position.set(5000,1000,0);
 	scene.add(light2);
 
-	light3 = new THREE.PointLight(0xA9A9A9,10);
+	var light3 = new THREE.PointLight(0xA9A9A9,10);
 	light3.position.set(0,1000,-5000);
 	scene.add(light3);
 
-	light4 = new THREE.PointLight(0xA9A9A9,10);
+	var light4 = new THREE.PointLight(0xA9A9A9,10);
 	light4.position.set(-5000,3000,5000);
 	scene.add(light4);
 
@@ -646,6 +646,7 @@ function stop() {
 startButton.addEventListener("click", ()=>{
 	gameStart.style.display = "none" // Hide start screen
 	init(); // game start
+	controls.lock();
 })
 
 //Game replay
