@@ -1,3 +1,5 @@
+
+import { PointerLockControls } from './js/PointerLockControls.js';
 const gameStart = document.querySelector(".game_start");	// game start screen
 const gameOver = document.querySelector(".game_over"); 		// game over screen
 const startButton= document.querySelector(".game_start > button"); // start button
@@ -27,6 +29,7 @@ var camera;
 var light;
 var loader;
 var controls;
+var pointerLock;
 
 let left = 65, right = 68 // LEFT: "A" RIGHT: "D"
 let up = 87, down = 83; // UP: "W" DOWN: "S"
@@ -100,21 +103,22 @@ function init(){
 	camera.position.y = 0;
 	camera.position.z = 50;
 
-	controls = new THREE.OrbitControls(camera, renderer.domElement);
-
+	//controls = new THREE.OrbitControls(camera, renderer.domElement);
+	controls = new PointerLockControls( camera, document.body );
+	controls.lock();
 	light = new THREE.PointLight(0xA9A9A9,10);
 	light.position.set(0,3000,5000);
 	scene.add(light);
 
-	light2 = new THREE.PointLight(0xA9A9A9,10);
+	var light2 = new THREE.PointLight(0xA9A9A9,10);
 	light2.position.set(5000,1000,0);
 	scene.add(light2);
 
-	light3 = new THREE.PointLight(0xA9A9A9,10);
+	var light3 = new THREE.PointLight(0xA9A9A9,10);
 	light3.position.set(0,1000,-5000);
 	scene.add(light3);
 
-	light4 = new THREE.PointLight(0xA9A9A9,10);
+	var light4 = new THREE.PointLight(0xA9A9A9,10);
 	light4.position.set(-5000,3000,5000);
 	scene.add(light4);
 
@@ -161,7 +165,8 @@ function animate() {
 	}
 	loading.style.display = "none";
 	scoreBoard.style.display = "flex" ;
-	controls.update();
+	//controls.update();
+
 	renderer.render(scene, camera);
 	handle = requestAnimationFrame(animate);
 }
@@ -178,7 +183,7 @@ function loadImmuneCell() {
 	   cell.point = 0;
        scene.add(cell);
 	   
-	   controls.target.set(cell.position.x, cell.position.y + 40, cell.position.z);
+	   //controls.target.set(cell.position.x, cell.position.y + 40, cell.position.z);
    }, undefined, function (error) {
        console.error(error);
    });
@@ -212,7 +217,7 @@ function keyCodeOn(e) {
 	}
 
 	// change what the camera is looking at
-	controls.target.set(cell.position.x, cell.position.y + 40, cell.position.z);
+	//controls.target.set(cell.position.x, cell.position.y + 40, cell.position.z);
 }
 
 
@@ -642,6 +647,7 @@ function stop() {
 startButton.addEventListener("click", ()=>{
 	gameStart.style.display = "none" // Hide start screen
 	init(); // game start
+	controls.lock();
 })
 
 //Game replay
