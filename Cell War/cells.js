@@ -6,6 +6,11 @@ const scoreBoard = document.getElementById( "score_board" ); 	// score board
 const scoreNum = document.getElementById( "score" ); 	// number of score
 const loading = document.querySelector( ".loading" ); 	// loading screen
 
+// state of cancers
+const GROWING = 0;
+const ADJUSTING = 1;
+const DEAD = 2;
+
 var num_cancer = 0; 	// the number of remaining cancer cell
 var win = false; 		// bool variable to determine win/loss
 var over = false; 		// bool variable to terminate the game
@@ -15,11 +20,6 @@ var score = 0; 			// score
 var maxMapSize = 600;
 var minMapSize = -600;
 
-// state of cancers
-const GROWING = 0;
-const ADJUSTING = 1;
-const DEAD = 2;
-
 var canvas;
 var renderer;
 var scene;
@@ -28,10 +28,16 @@ var light;
 var loader;
 var controls;
 
+let speed = 0.3; // Speed of rotating the camera
+let distance = 3; // Speed of moving 
+let vector = new THREE.Vector3(); // Vector of direction the camera's facing
+let direction = new THREE.Vector3(); // Vector of direction the camera's facing with distance
+let rightDir = new THREE.Vector3(1, 0, 0); // Direction of x-axis
+
 let left = 65, right = 68 // LEFT: "A" RIGHT: "D"
 let up = 87, down = 83; // UP: "W" DOWN: "S"
 
-var cell; // immune cell
+let cell; // immune cell
 
 var cancerIndex = 0;	// 암세포들의 총 개수(이미 죽은 암세포도 포함)
 var cancerList = [];	// 암세포 변수들을 담아놓는 리스트
@@ -65,8 +71,8 @@ function init(){
 	canvas.width = window.innerWidth; 
 	canvas.height = window.innerHeight;
 
-	renderer = new THREE.WebGLRenderer({canvas, alpha: true,});
-	renderer.setSize(canvas.width,canvas.height);
+	renderer = new THREE.WebGLRenderer({canvas, alpha: true});
+	renderer.setSize(canvas.width, canvas.height);
 
 	// Create a loading manager to set RESOURCES_LOADED when appropriate.
 	// Pass loadingManager to all resource loaders.
@@ -101,6 +107,7 @@ function init(){
 	camera.position.z = 50;
 
 	controls = new THREE.OrbitControls(camera, renderer.domElement);
+	controls.rotateSpeed = speed;
 
 	light = new THREE.PointLight(0xA9A9A9,10);
 	light.position.set(0,3000,5000);
@@ -161,7 +168,8 @@ function animate() {
 	}
 	loading.style.display = "none";
 	scoreBoard.style.display = "flex" ;
-	controls.update();
+
+	camera.updateProjectionMatrix();
 	renderer.render(scene, camera);
 	handle = requestAnimationFrame(animate);
 }
@@ -177,42 +185,38 @@ function loadImmuneCell() {
        cell.position.set(0, 0, 0);    // 물체 위치
 	   cell.point = 0;
        scene.add(cell);
-	   
-	   controls.target.set(cell.position.x, cell.position.y + 40, cell.position.z);
    }, undefined, function (error) {
        console.error(error);
    });
 
 }
 
-
 // 면역세포(user) 방향 조작 가능케하는 함수
 function keyCodeOn(e) {
-	var cameraDirection = new THREE.Vector3();
-	camera.getWorldDirection(cameraDirection);
-
+	direction = camera.getWorldDirection(vector).multiplyScalar(distance);
+	
 	if (e.keyCode == left) {
-		//cameraDirection = 
-		cell.position.add(cameraDirection);
-		camera.position.add(cameraDirection);
+		direction.copy(rightDir).transformDirection(camera.matrixWorld).multiplyScalar(distance).negate();
+		cell.position.add(direction);
+		camera.position.add(direction);
 	}
 	else if (e.keyCode == right) {
-		//cameraDirection = 
-		cell.position.add(cameraDirection);
-		camera.position.add(cameraDirection);
+		direction.copy(rightDir).transformDirection(camera.matrixWorld).multiplyScalar(distance);
+		cell.position.add(direction);
+		camera.position.add(direction);
 	}
 	else if (e.keyCode == up) {
-		cell.position.add(cameraDirection);
-		camera.position.add(cameraDirection);
+		cell.position.add(direction);
+		camera.position.add(direction);
 	}
 	else if (e.keyCode == down) {
-		cameraDirection = cameraDirection.negate();
-		cell.position.add(cameraDirection);
-		camera.position.add(cameraDirection);
+		direction = direction.negate();
+		cell.position.add(direction);
+		camera.position.add(direction);
 	}
 
-	// change what the camera is looking at
-	controls.target.set(cell.position.x, cell.position.y + 40, cell.position.z);
+	// Keep looking at the user cell on the center
+	controls.target.set(cell.position.x, cell.position.y, cell.position.z);
 }
 
 

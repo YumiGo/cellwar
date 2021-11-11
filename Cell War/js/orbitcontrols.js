@@ -1069,8 +1069,11 @@
 
 
 			scope.domElement.addEventListener( 'contextmenu', onContextMenu );
-			scope.domElement.addEventListener( 'pointerdown', onPointerDown );
-			scope.domElement.addEventListener( 'pointercancel', onPointerCancel );
+			// Enable the user to rotate without a mouse click.
+			state = STATE.ROTATE;
+			scope.domElement.addEventListener( 'pointermove', onPointerMove );
+			//scope.domElement.addEventListener( 'pointerdown', onPointerDown );
+			//scope.domElement.addEventListener( 'pointercancel', onPointerCancel );
 			scope.domElement.addEventListener( 'wheel', onMouseWheel, {
 				passive: false
 			} ); // force an update at start
