@@ -12,9 +12,12 @@ var over = false; 		// bool variable to terminate the game
 var handle = 0; 		// used to terminate the animation
 var score = 0; 			// score
 
-// 암세포 상태 (성장중, 싸우는중, 죽음)
+var maxMapSize = 600;
+var minMapSize = -600;
+
+// state of cancers
 const GROWING = 0;
-const FIGHTING = 1;
+const ADJUSTING = 1;
 const DEAD = 2;
 
 var canvas;
@@ -23,6 +26,7 @@ var scene;
 var camera;
 var light;
 var loader;
+var controls;
 
 let left = 65, right = 68 // LEFT: "A" RIGHT: "D"
 let up = 87, down = 83; // UP: "W" DOWN: "S"
@@ -35,6 +39,7 @@ var cancerList = [];	// 암세포 변수들을 담아놓는 리스트
 // 적혈구(먹이)의 총 개수, 적혈구들을 담아놓는 리스트
 var bloodCellIndex = 0;
 var bloodCellList = [];
+var totalNumOfBloodCells = 400;
 
 // 게임 종료시 setInterval 함수의 중단을 위해 필요한 변수 저장용 리스트
 var intervalVariables = [];
@@ -91,11 +96,11 @@ function init(){
 
 	camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
 	camera.rotation.y = 45 / 180 * Math.PI;
-	camera.position.x = 130;
-	camera.position.y = 100;
-	camera.position.z = 130;
+	camera.position.x = 150;
+	camera.position.y = 0;
+	camera.position.z = 50;
 
-	const controls = new THREE.OrbitControls(camera, renderer.domElement);
+	controls = new THREE.OrbitControls(camera, renderer.domElement);
 
 	light = new THREE.PointLight(0xA9A9A9,10);
 	light.position.set(0,3000,5000);
@@ -156,6 +161,7 @@ function animate() {
 	}
 	loading.style.display = "none";
 	scoreBoard.style.display = "flex" ;
+	controls.update();
 	renderer.render(scene, camera);
 	handle = requestAnimationFrame(animate);
 }
@@ -171,6 +177,8 @@ function loadImmuneCell() {
        cell.position.set(0, 0, 0);    // 물체 위치
 	   cell.point = 0;
        scene.add(cell);
+	   
+	   controls.target.set(cell.position.x, cell.position.y + 40, cell.position.z);
    }, undefined, function (error) {
        console.error(error);
    });
@@ -180,16 +188,31 @@ function loadImmuneCell() {
 
 // 면역세포(user) 방향 조작 가능케하는 함수
 function keyCodeOn(e) {
-	if (e.keyCode == left)
-		cell.position.x -= 2
-	else if (e.keyCode == right)
-		cell.position.x += 2;
-	else if (e.keyCode == up)
-		cell.position.z += 2;
-	else if (e.keyCode == down)
-		cell.position.z -= 2;
-	else
-		return;
+	var cameraDirection = new THREE.Vector3();
+	camera.getWorldDirection(cameraDirection);
+
+	if (e.keyCode == left) {
+		//cameraDirection = 
+		cell.position.add(cameraDirection);
+		camera.position.add(cameraDirection);
+	}
+	else if (e.keyCode == right) {
+		//cameraDirection = 
+		cell.position.add(cameraDirection);
+		camera.position.add(cameraDirection);
+	}
+	else if (e.keyCode == up) {
+		cell.position.add(cameraDirection);
+		camera.position.add(cameraDirection);
+	}
+	else if (e.keyCode == down) {
+		cameraDirection = cameraDirection.negate();
+		cell.position.add(cameraDirection);
+		camera.position.add(cameraDirection);
+	}
+
+	// change what the camera is looking at
+	controls.target.set(cell.position.x, cell.position.y + 40, cell.position.z);
 }
 
 
@@ -201,11 +224,11 @@ function loadRootCancer() {
 		var cancer = gltf.scene.children[0];
 		cancer.index = cancerIndex;
 		cancer.point = 1;
-		cancer.scale.set(5, 5, 5);
+		cancer.scale.set(3, 3, 3);
 		cancer.state = GROWING;
 
 		var offset = getRandomOffset();
-		cancer.position.set(-40, 0, 0);
+		cancer.position.set(getRandomValue(), getRandomValue(), getRandomValue());
 		cancer.direction = offset;
 
 		scene.add(cancer);
@@ -251,8 +274,9 @@ function createBabyCancer(momIndex, offset) {
 	var babyCancer = momCancer.clone();
 
 	babyCancer.index = cancerIndex;
-	babyCancer.point = 0;
-	babyCancer.scale.set(5, 5, 5);
+	babyCancer.point = Math.round(Math.random() * 10 + 7);	// from 7 to 17
+	var babyCancerScale = 3 + babyCancer.point * 0.1;
+	babyCancer.scale.set(babyCancerScale, babyCancerScale, babyCancerScale);
 	babyCancer.state = GROWING;
 
 	babyCancer.position.x = momCancer.position.x + offset[0];
@@ -295,8 +319,8 @@ function updateCancersState() {
 			cancer.point += 1;
 		}
 
-		// 엄마 암세포의 포인트가 10이 되고 이미 죽은 상태가 아니라면, 애기 암세포 3개 생성 후 제거
-		if (cancer.state !== DEAD && cancer.point === 10) {
+		// 엄마 암세포의 포인트가 50이 되고 이미 죽은 상태가 아니라면, 애기 암세포 3개 생성 후 제거
+		if (cancer.state !== DEAD && cancer.point === 50) {
 
 			cancer.state = DEAD;
 
@@ -340,7 +364,7 @@ function increaseCancersScale() {
 		// 암세포 상태 업데이트
 		var cancer = cancerList[i];
 		if (cancer.state === GROWING) {
-			cancer.scale.set(cancer.scale.x + 0.1, cancer.scale.y + 0.1, cancer.scale.z + 0.1);
+			cancer.scale.set(cancer.scale.x + 0.05, cancer.scale.y + 0.05, cancer.scale.z + 0.05);
 		}
 	}
 }
@@ -355,10 +379,31 @@ function moveCancers() {
 			continue;
 
 		// 암세포 위치 이동
-		if (cancer.state === GROWING) {
-			cancer.position.x += cancer.direction[0] / 40;
-			cancer.position.y += cancer.direction[1] / 40;
-			cancer.position.z += cancer.direction[2] / 40;
+		if (cancer.state === GROWING || cancer.state === ADJUSTING) {
+			cancer.position.x += cancer.direction[0] / 30;
+			cancer.position.y += cancer.direction[1] / 30;
+			cancer.position.z += cancer.direction[2] / 30;
+
+			// 암세포가 맵 밖으로 나갔을 경우
+			if (cancer.state !== ADJUSTING &&
+				(cancer.position.x >= maxMapSize || cancer.position.x <= minMapSize ||
+				cancer.position.y >= maxMapSize || cancer.position.y <= minMapSize ||
+				cancer.position.z >= maxMapSize|| cancer.position.z <= minMapSize)) {
+					cancer.state = ADJUSTING;
+					cancer.direction = cancer.direction.map(x => -x);
+					var temp = cancer.direction[0];
+					cancer.direction[0] = cancer.direction[1]
+					cancer.direction[1] = cancer.direction[2]
+					cancer.direction[2] = temp;
+					console.log("암세포 맵 이탈");
+					console.log(cancer.position);
+				}
+			else if (cancer.state === ADJUSTING && 
+				cancer.position.x <= maxMapSize && cancer.position.x >= minMapSize &&
+				cancer.position.y <= maxMapSize && cancer.position.y >= minMapSize &&
+				cancer.position.z <= maxMapSize && cancer.position.z >= minMapSize) {
+					cancer.state = GROWING;
+				}
 		}
 	}
 }
@@ -374,19 +419,26 @@ function changeCancersDirection() {
 
 		// 암세포 이동 방향 조정
 		if (cancer.state === GROWING) {
-			cancer.direction[0] += cancer.direction[1] / 10;
-			cancer.direction[1] += cancer.direction[2] / 10;
-			cancer.direction[2] += cancer.direction[0] / 10;
+			cancer.direction[0] += cancer.direction[1] / 20;
+			cancer.direction[1] += cancer.direction[2] / 100;
+			cancer.direction[2] += cancer.direction[0] / 100;
+		}
+		else if (cancer.state === ADJUSTING) {
+			cancer.direction[0] += cancer.direction[2] / 20;
+			cancer.direction[1] += cancer.direction[0] / 100;
+			cancer.direction[2] += cancer.direction[1] / 100;
 		}
 	}
 }
 
-
 // 면역세포-적혈구, 면역세포-암세포간의 충돌 탐지
 function detectCollision() {
+	var momBloodCell = bloodCellList[0];
+	if (!momBloodCell)
+		return;
 
 	// 면역세포와 적혈구의 충돌 탐지
-	for (var i = 0; i < bloodCellIndex; i++) {
+	for (var i = 1; i < bloodCellIndex; i++) {
 		var bloodCell = bloodCellList[i];
 		if (!bloodCell)
 			continue;
@@ -400,6 +452,9 @@ function detectCollision() {
 			cell.point += bloodCell.point;
 			cell.scale.set(cell.scale.x + 1.0, cell.scale.y + 1.0, cell.scale.z + 1.0);
 			console.log("적혈구와의 충돌 발생, 점수: " + cell.point);
+
+			// 새로운 적혈구 하나 생성
+			createRandomBloodCell(momBloodCell);
 		}
 	}
 
@@ -507,9 +562,8 @@ function loadBloodCell() {
 		cell.index = bloodCellIndex;
 		cell.point = 10;
 		cell.scale.set(3, 3, 3);
-		cell.position.set(20, 0, 0);
+		cell.position.set(getRandomValue() * 1000, getRandomValue() * 1000, getRandomValue() * 1000);
 
-		scene.add(cell);
 		bloodCellList[bloodCellIndex] = cell;
 		bloodCellIndex++;
 
@@ -526,30 +580,34 @@ function copyAndSpreadBloodCells() {
 	if (!bloodCell)
 		return;
 
-	// 적혈구 100개 생성
-	for (var i = 0; i < 100; i++) {
-		var copiedBloodCell = bloodCell.clone();	// 복사
-		copiedBloodCell.index = bloodCellIndex;
-		copiedBloodCell.point = 10;
-		copiedBloodCell.scale.set(3, 3, 3);
-	
-		// 좌표 랜덤 생성
-		var rv1 = getRandomValue();
-		var rv2 = getRandomValue();
-		var rv3 = getRandomValue();
-		copiedBloodCell.position.set(rv1, rv2, rv3);
-		copiedBloodCell.rotation.set(rv1, rv2, rv3);
-	
-		scene.add(copiedBloodCell);
-		bloodCellList[bloodCellIndex] = copiedBloodCell;
-		bloodCellIndex++;
+	// create blood cells
+	for (var i = 0; i < totalNumOfBloodCells; i++) {
+		createRandomBloodCell(bloodCell);
 	}
-
 }
 
-// 범위가 -300 ~ 300인 난수를 생성하는 함수 (적혈구 좌표 랜덤 생성용)
+// create copied blood cell at random location
+function createRandomBloodCell(momBloodCell) {
+	var copiedBloodCell = momBloodCell.clone();
+	copiedBloodCell.index = bloodCellIndex;
+	copiedBloodCell.point = 10;
+	copiedBloodCell.scale.set(3, 3, 3);
+	
+	// create coordinates randomly
+	var rv1 = getRandomValue();
+	var rv2 = getRandomValue();
+	var rv3 = getRandomValue();
+	copiedBloodCell.position.set(rv1, rv2, rv3);
+	copiedBloodCell.rotation.set(rv1, rv2, rv3);
+	
+	scene.add(copiedBloodCell);
+	bloodCellList[bloodCellIndex] = copiedBloodCell;
+	bloodCellIndex++;
+}
+
+// 범위가 minMapSize ~ maxMapSize인 난수를 생성하는 함수 (적혈구 좌표 랜덤 생성용)
 function getRandomValue() {
-	return Math.floor(Math.random() * 600 - 300);
+	return Math.floor(Math.random() * (maxMapSize - minMapSize) + minMapSize);
 }
 
 //Game over function
