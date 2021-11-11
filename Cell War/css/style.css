@@ -57,7 +57,6 @@
 .infinity-2 {
     width:90px;
     height:14px;
-
     color:#FFF;
     background: radial-gradient(circle closest-side, currentColor 92%,#0000 ) calc(100%/3) 0/calc(100%/4) 100%;
     animation:i2 0.5s infinite linear;
@@ -91,10 +90,13 @@
     font: italic normal 10em "Abril Fatface", serif;
 }
 .game_start > button {
+    width: 100pt;
+    height: 40pt;
     padding: 0.5rem;
     color: #fff;
     background: #4C4DDF;
     cursor: pointer;
+    font-size: 16%;
 }
 .game_over{
     display: none;
@@ -115,9 +117,12 @@
     font: italic normal 0.5em "Press Start 2P", serif;
 }
 .game_over > button {
+    width: 100pt;
+    height: 40pt;
     margin-top: 30px;
     padding: 0.5rem;
     color: #fff;
     background: #4C4DDF;
     cursor: pointer;
+    font-size: 20%;
 }
