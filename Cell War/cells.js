@@ -118,7 +118,7 @@ function init(){
         rt.fromEquirectangularTexture(renderer, texture);
         scene.background = rt.texture;
       });
-
+	texture.minFilter = THREE.LinearFilter;
 	camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
 	camera.rotation.y = 45 / 180 * Math.PI;
 	camera.position.x = 150;
