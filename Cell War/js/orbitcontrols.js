@@ -471,11 +471,19 @@
 
 			}
 
-			function handleMouseMoveRotate( event ) {
+			// modified
+			const RADIUS = 20;
+			var x = 0;
+			var y = 0;
 
-				rotateEnd.set( event.clientX, event.clientY );
-				rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );
+			function handleMouseMoveRotate( event ) {
 				const element = scope.domElement;
+
+				x += event.movementX;
+				y += event.movementY;
+				
+				rotateEnd.set( x, y );
+				rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );
 				rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight ); // yes, height
 
 				rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight );
@@ -483,6 +491,7 @@
 				scope.update();
 
 			}
+
 
 			function handleMouseMoveDolly( event ) {
 

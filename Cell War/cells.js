@@ -71,6 +71,26 @@ function init(){
 	canvas.width = window.innerWidth; 
 	canvas.height = window.innerHeight;
 
+	// about lock
+	canvas.requestPointerLock = canvas.requestPointerLock ||
+                            	canvas.mozRequestPointerLock;
+	document.exitPointerLock = document.exitPointerLock ||
+                        		document.mozExitPointerLock;
+
+	// when game starts, window is locked
+	if (document.pointerLockElement === canvas ||
+			document.mozPointerLockElement === canvas) {
+		console.log('The pointer lock status is now unlocked');
+	} else {
+		canvas.requestPointerLock();
+		console.log('The pointer lock status is now locked');
+	}
+
+	// if user clicks canvas, window is locked
+	canvas.onclick = function() {
+  		canvas.requestPointerLock();
+	};
+
 	renderer = new THREE.WebGLRenderer({canvas, alpha: true});
 	renderer.setSize(canvas.width, canvas.height);
 
@@ -108,6 +128,7 @@ function init(){
 
 	controls = new THREE.OrbitControls(camera, renderer.domElement);
 	controls.rotateSpeed = speed;
+	controls.enablePan = false;
 
 	light = new THREE.PointLight(0xA9A9A9,10);
 	light.position.set(0,3000,5000);
@@ -185,6 +206,7 @@ function loadImmuneCell() {
        cell.position.set(0, 0, 0);    // 물체 위치
 	   cell.point = 0;
        scene.add(cell);
+	   controls.target.set(cell.position.x, cell.position.y, cell.position.z);
    }, undefined, function (error) {
        console.error(error);
    });
@@ -231,8 +253,12 @@ function loadRootCancer() {
 		cancer.scale.set(3, 3, 3);
 		cancer.state = GROWING;
 
+		var rv1 = Math.round(Math.random() * (400) -200);
+		var rv2 = Math.round(Math.random() * (400) -200);
+		var rv3 = Math.round(Math.random() * (400) -200);
+		cancer.position.set(rv1, rv2, rv3);
+		
 		var offset = getRandomOffset();
-		cancer.position.set(getRandomValue(), getRandomValue(), getRandomValue());
 		cancer.direction = offset;
 
 		scene.add(cancer);
@@ -616,6 +642,13 @@ function getRandomValue() {
 
 //Game over function
 function showGameOver(){
+	// unlocked
+	if (document.pointerLockElement === canvas ||
+		document.mozPointerLockElement === canvas) {
+		document.exitPointerLock();
+		console.log('The pointer lock status is now unlocked');
+	}
+
 	stop(); // stop animation
 	if(win){ // if win
 		document.getElementById("result").innerHTML = "You Win!";
@@ -646,7 +679,6 @@ function stop() {
 startButton.addEventListener("click", ()=>{
 	gameStart.style.display = "none" // Hide start screen
 	init(); // game start
-	controls.lock();
 })
 
 //Game replay
