@@ -2,12 +2,6 @@
     width: 100%;
     height: 100%;
     display: block;
-    /*그라데이션 배경*/
-    /*
-    background: #2c3e50;
-    background: -webkit-linear-gradient(to right, #3498db, #2c3e50); 
-    background: linear-gradient(to right, #3498db, #2c3e50); 
-    */
 }
 #score_board{
     line-height: 1.5;
