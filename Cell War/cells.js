@@ -115,7 +115,7 @@ function init(){
 		const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
         rt.fromEquirectangularTexture(renderer, texture);
         scene.background = rt.texture;
-    });
+      });
 	texture.minFilter = THREE.LinearFilter; // texture resizing
 
 	camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
