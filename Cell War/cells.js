@@ -503,6 +503,8 @@ function detectCollision() {
 			if (cell.point <= 0) {
 				// game over
 				console.log("Game over because the point of the immune cell is below zero.");
+				over = true; 
+				win = false;
 				stop();
 				showGameOver();
 
