@@ -17,8 +17,8 @@ var over = false; 		// bool variable to terminate the game
 var handle = 0; 		// used to terminate the animation
 var score = 0; 			// score
 
-var maxMapSize = 600;
-var minMapSize = -600;
+var maxMapSize = 300;
+var minMapSize = -300;
 
 var canvas;
 var renderer;
@@ -44,7 +44,7 @@ var cancerList = [];	// list of cancer cell variables
 
 var bloodCellIndex = 0;	// total number of blood cells (including dead blood cells)
 var bloodCellList = [];	// list of cancer cell variables
-var totalNumOfBloodCells = 400;	// number of alive blood cells (no dead blood cells)
+var totalNumOfBloodCells = 100;	// number of alive blood cells (no dead blood cells)
 
 // list for storing variables required to interrupt the setInterval() function at the end of the game
 var intervalVariables = [];
@@ -102,7 +102,7 @@ function init(){
 	};
 	
 	loadingManager.onLoad = function(){
-		console.log("loaded all resources");
+		console.log("All resources loaded");
 		RESOURCES_LOADED = true;
 	};
 
@@ -111,13 +111,12 @@ function init(){
 
 	//3D background texture
 	const tloader = new THREE.TextureLoader(loadingManager);
-    const texture = tloader.load(
-      'galaxy1.jpg',
-      () => {
-        const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
+    const texture = tloader.load('galaxy1.jpg', () => {
+		const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
         rt.fromEquirectangularTexture(renderer, texture);
         scene.background = rt.texture;
-      });
+    });
+	texture.minFilter = THREE.LinearFilter; // texture resizing
 
 	camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
 	camera.rotation.y = 45 / 180 * Math.PI;
@@ -133,19 +132,7 @@ function init(){
 	light.position.set(0,3000,5000);
 	scene.add(light);
 
-	var light2 = new THREE.PointLight(0xA9A9A9,10);
-	light2.position.set(5000,1000,0);
-	scene.add(light2);
-
-	var light3 = new THREE.PointLight(0xA9A9A9,10);
-	light3.position.set(0,1000,-5000);
-	scene.add(light3);
-
-	var light4 = new THREE.PointLight(0xA9A9A9,10);
-	light4.position.set(-5000,3000,5000);
-	scene.add(light4);
-
-	window.addEventListener("keydown", keyCodeOn, false);
+	window.addEventListener("keydown", keyCodeOn, false); // Get the keystroke.
 	scoreNum.innerHTML = score;	// show score in game dispaly
 
 	loader = new THREE.GLTFLoader(loadingManager);
@@ -188,7 +175,7 @@ function animate() {
 	loading.style.display = "none";
 	scoreBoard.style.display = "flex" ;
 
-	camera.updateProjectionMatrix();
+	camera.updateProjectionMatrix(); // Update camera position
 	renderer.render(scene, camera);
 	handle = requestAnimationFrame(animate);
 }
@@ -197,24 +184,23 @@ function animate() {
 /**** immune cell ****/
 // function that load gltf model of immune cell and create user objet
 function loadImmuneCell() {
-
    loader.load('./lympocyte/scene.gltf', function(gltf) {
        cell = gltf.scene.children[0];
-       cell.scale.set(5, 5, 5);
-       cell.position.set(0, 0, 0);
+	   cell.position.set(0, 0, 0);  
+	   cell.scale.set(5, 5, 5);
 	   cell.point = 0;
        scene.add(cell);
-	   controls.target.set(cell.position.x, cell.position.y, cell.position.z);
+	   controls.target.set(cell.position.x, cell.position.y, cell.position.z); // Focus the camera to the cell
    }, undefined, function (error) {
        console.error(error);
    });
-
 }
 
-// unction that enables user controling
+// Function that enables user controlling
 function keyCodeOn(e) {
-	direction = camera.getWorldDirection(vector).multiplyScalar(distance);
+	direction = camera.getWorldDirection(vector).multiplyScalar(distance); // Get the direction vector
 	
+	// Left and right movement along the direction that the camera is facing.
 	if (e.keyCode == left) {
 		direction.copy(rightDir).transformDirection(camera.matrixWorld).multiplyScalar(distance).negate();
 		cell.position.add(direction);
@@ -225,6 +211,7 @@ function keyCodeOn(e) {
 		cell.position.add(direction);
 		camera.position.add(direction);
 	}
+	// Go forward and backward in the direction that the camera is facing.
 	else if (e.keyCode == up) {
 		cell.position.add(direction);
 		camera.position.add(direction);
