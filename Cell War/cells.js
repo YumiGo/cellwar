@@ -53,15 +53,6 @@ window.onload = function showGameStart(){
 	gameStart.style.display = "flex"
 }
 
-// An object to hold all the things needed for our loading screen
-var loadingScreen = {
-	scene: new THREE.Scene(),
-	camera: new THREE.PerspectiveCamera(90, 1280/720, 0.1, 100),
-	box: new THREE.Mesh(
-		new THREE.BoxGeometry(0.5,0.5,0.5),
-		new THREE.MeshBasicMaterial({ color:0x4444ff })
-	)
-};
 var loadingManager = null;
 var RESOURCES_LOADED = false;
 
@@ -635,8 +626,8 @@ function showGameOver(){
 	if(win){ // if win
 		document.getElementById("result").innerHTML = "You Win!";
 	}
-	else{ //if loose
-		document.getElementById("result").innerHTML = "You Loose";
+	else{ //if lose
+		document.getElementById("result").innerHTML = "You Lose";
 	}
 	document.getElementById("score_result").innerHTML = "Score:" + score; //show score
 	gameOver.style.display = "flex" // show game over screen
